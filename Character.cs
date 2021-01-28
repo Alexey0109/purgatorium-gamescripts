@@ -1,7 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 /*
 *       Version update by Keyboard Destroyer
 *       TODO
@@ -21,7 +21,6 @@ public class Character : MonoBehaviour
 
     private new Rigidbody2D     rigidbody;
     private     SpriteRenderer  spriteRenderer;
-
     private const float speed       =   5f;
     private const float jumpForce   =   5f;
     private const float checkRadius =   .2f;
@@ -40,7 +39,7 @@ public class Character : MonoBehaviour
     {
         //I used OnCollisionEnter2D function to check ground. *shrug* :D
 
-        //isGrounded = Physics2D.OverlapCircle(transformPosition.position, checkRadius, whatIsGround);
+        isGrounded = Physics2D.OverlapCircle(transformPosition.position, checkRadius, whatIsGround);
 
         if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKey(KeyCode.W)))
         {
@@ -68,20 +67,27 @@ public class Character : MonoBehaviour
         if (col.gameObject.tag == "enemy")                  //If we touched an enemy
         {
             Debug.Log("You died!");                         //Apply some hp damage
-            /*Do smth here*/
+            Application.LoadLevel(Application.loadedLevel);
         }
     }
 
     void OnCollisionEnter2D(Collision2D col)                //If we have collision
     {
         //Debug.Log("Apply Physics! Collision entered!");
-        if(col.gameObject.tag == "ground")                  //If we're standing on ground
-            isGrounded = true;                              //bool isGrounded should be true so that we can jump
+        if(col.gameObject.tag == "ground")  
+        {
+            Debug.Log("Do something...");
+
+        }
+        else if (col.gameObject.tag == "enemy")             //If we have colision with enemy    
+        {
+            Physics2D.IgnoreCollision(col.gameObject.GetComponent<Collider2D>(), GetComponent<Collider2D>());   //Disables collider interaction
+        }
     }
 
-    public void Jump() //Not used
+    public void Jump()
     {
         rigidbody.velocity = Vector2.up * jumpForce;        //Apply jump force
-        isGrounded = false;                                 //We're not grounded now
+        //isGrounded = false;                                 //We're not grounded now
     }
 }
