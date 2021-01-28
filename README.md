@@ -4,3 +4,5 @@ Unity scripts
 Documentation:
 
 TODO:
+
+Add AI NPC
