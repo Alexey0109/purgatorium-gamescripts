@@ -1,16 +1,7 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-/*
-*       Version update by Keyboard Destroyer
-*       TODO
-*       1. Fix Jump function    (Done)
-*       2. Add coliders check   (Done)
-*       3. Add Trigger check    (Done)
-*       4. Damage & Enemies     (Enemy tag added)
-*/
-
 
 public class Character : MonoBehaviour
 {
@@ -18,33 +9,30 @@ public class Character : MonoBehaviour
     [SerializeField]  private Transform transformPosition;
     [SerializeField]  private LayerMask whatIsGround;
 
+    [SerializeField]  private string reloadScene;
 
-    private new Rigidbody2D     rigidbody;
-    private     SpriteRenderer  spriteRenderer;
-    private const float speed       =   5f;
-    private const float jumpForce   =   5f;
-    private const float checkRadius =   .2f;
-    private       float moveInput;
+    private new Rigidbody2D rigidbody;
+    private SpriteRenderer spriteRenderer;
+    private Animator anim;
+
+    private const float speed = 5f;
+    private const float jumpForce = 7f;
+    private const float checkRadius = .2f;
+    private float moveInput;
     
-    private       bool isGrounded;
+    private bool isGrounded;
     
     void Start()
     {
-        rigidbody       = GetComponent<Rigidbody2D>();
-        spriteRenderer  = GetComponent<SpriteRenderer>();
+        rigidbody = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
     }
 
 
     void Update()
     {
-        //I used OnCollisionEnter2D function to check ground. *shrug* :D
-
-        isGrounded = Physics2D.OverlapCircle(transformPosition.position, checkRadius, whatIsGround);
-
-        if (isGrounded && (Input.GetKeyDown(KeyCode.Space) || Input.GetKey(KeyCode.W)))
-        {
-            Jump(); //Do jump
-        }
+        
     }
 
     private void FixedUpdate()
@@ -53,40 +41,57 @@ public class Character : MonoBehaviour
         rigidbody.velocity = new Vector2(moveInput * speed, rigidbody.velocity.y);
         if (moveInput > 0)
         {
+            anim.SetBool("isRunning", true);
             spriteRenderer.flipX = false;
         }
         else if (moveInput < 0)
         {
+            anim.SetBool("isRunning", true);
             spriteRenderer.flipX = true;
-        }
-    }
-
-    void OnTriggerEnter2D(Collider2D col)                   //If we have trigger
-    {
-        Debug.Log("Apply damage! Trigger entered!");        
-        if (col.gameObject.tag == "enemy")                  //If we touched an enemy
+        } else
         {
-            Debug.Log("You died!");                         //Apply some hp damage
-            Application.LoadLevel(Application.loadedLevel);
+            anim.SetBool("isRunning", false);
         }
-    }
 
-    void OnCollisionEnter2D(Collision2D col)                //If we have collision
-    {
-        //Debug.Log("Apply Physics! Collision entered!");
-        if(col.gameObject.tag == "ground")  
+        
+        isGrounded = Physics2D.OverlapCircle(transformPosition.position, checkRadius, whatIsGround);
+
+        if (isGrounded && (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.W)))
         {
-            Debug.Log("Do something...");
-
+            rigidbody.velocity = Vector2.up * jumpForce;
         }
-        else if (col.gameObject.tag == "enemy")             //If we have colision with enemy    
+
+        if (!isGrounded && Input.GetKey(KeyCode.W) && rigidbody.velocity.y < 0)
         {
-            Physics2D.IgnoreCollision(col.gameObject.GetComponent<Collider2D>(), GetComponent<Collider2D>());   //Disables collider interaction
+            rigidbody.gravityScale = 0.25f;
+        }
+        else
+        {
+            rigidbody.gravityScale = 1f;
         }
     }
 
     public void Jump()
     {
-        rigidbody.velocity = Vector2.up * jumpForce;        //Apply jump force
+        if (isGrounded)
+        {
+            rigidbody.velocity = Vector2.up * jumpForce;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.gameObject.tag == "Enemies")
+        {
+            SceneManager.LoadScene(reloadScene);
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D col)
+    {
+        if (col.gameObject.tag == "Enemies")
+        {
+            Physics2D.IgnoreCollision(col.gameObject.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+        }
     }
 }
