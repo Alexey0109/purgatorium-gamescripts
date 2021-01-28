@@ -88,6 +88,5 @@ public class Character : MonoBehaviour
     public void Jump()
     {
         rigidbody.velocity = Vector2.up * jumpForce;        //Apply jump force
-        //isGrounded = false;                                 //We're not grounded now
     }
 }
